@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>《掌控习惯》读书会简明版</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#0F6B5E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="习惯读书会">
+<meta name="description" content="用小学五年级就能看懂的话，讲《掌控习惯》里最有用的想法。可以划线提问，把问题发给作者。">
+<style>
+/* Layout: one chapter per screen, sticky top bar, bottom bar appears when text is selected.
+   No web fonts or CDNs: everything is in this file so it opens fine in China and inside WeChat. */
+:root {
+  --bg: #F3F5F2;
+  --paper: #FFFFFF;
+  --ink: #1E2823;
+  --muted: #5B6A62;
+  --line: #DCE3DE;
+  --accent: #0F6B5E;
+  --accent-soft: #E0EFEB;
+  --mark: #FFE38A;
+  --mark-on: #F5C842;
+  --warn: #B4532A;
+  --font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", system-ui, sans-serif;
+  --font-title: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121815; --paper: #1A221E; --ink: #E4ECE7; --muted: #9BADA3; --line: #2C3832;
+    --accent: #6CC7B4; --accent-soft: #1F3530; --mark: #6A5A16; --mark-on: #8C7618; --warn: #E08A62;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 18px/1.85 var(--font); }
+button { font: inherit; color: inherit; }
+.wrap { max-width: 680px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top); }
+header .wrap { display: flex; align-items: center; gap: 8px; padding-block: 10px; }
+.brand { flex: 1; min-width: 0; font: 700 1rem/1.3 var(--font-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tbtn { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 14px; font-size: .9rem; cursor: pointer; white-space: nowrap; }
+.tbtn b { color: var(--accent); }
+
+main .wrap { padding-block: 20px 120px; }
+article { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px; }
+.kicker { font-size: .85rem; color: var(--muted); margin: 0 0 4px; }
+h1 { font: 700 1.55rem/1.4 var(--font-title); margin: 0 0 18px; }
+h2.lbl { font-size: .9rem; font-weight: 700; color: var(--accent); margin: 22px 0 4px; letter-spacing: .05em; }
+p { margin: 0 0 10px; }
+.one { font: 700 1.2rem/1.7 var(--font-title); }
+ul, ol { margin: 0 0 10px; padding-left: 1.4em; }
+li { margin-bottom: 4px; }
+.example { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; }
+mark.hl { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 1px; cursor: pointer; }
+mark.hl.on { background: var(--mark-on); }
+
+.task { display: flex; gap: 10px; align-items: flex-start; border: 1px dashed var(--line); border-radius: 10px; padding: 12px; cursor: pointer; }
+.task input { width: 22px; height: 22px; margin-top: 5px; accent-color: var(--accent); flex-shrink: 0; }
+
+.check { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px; }
+.check p { color: var(--muted); font-size: .95rem; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 16px; cursor: pointer; font-size: .95rem; }
+.choice[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+.hint { font-size: .85rem; color: var(--muted); }
+
+.pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+.pbtn { flex: 1; border: 1px solid var(--line); background: var(--paper); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; font-size: .95rem; min-width: 0; }
+.pbtn.next { text-align: right; }
+.pbtn small { display: block; color: var(--muted); font-size: .8rem; }
+.pbtn[hidden] { visibility: hidden; display: block; }
+
+.toc a { display: flex; justify-content: space-between; gap: 10px; padding: 12px 4px; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; }
+.toc a:last-child { border-bottom: 0; }
+.toc .meta { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+
+/* Bottom bar: shows while text is selected, so phone users can ask about it. */
+.selbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--ink); color: var(--paper); padding: 12px max(16px, env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 12px; justify-content: center; }
+.selbar button { background: var(--mark); color: #1E2823; border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; cursor: pointer; }
+.fab { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 6; background: var(--accent); color: var(--paper); border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,.18); cursor: pointer; }
+
+.sheet-bg { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.4); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { width: 100%; max-width: 680px; max-height: 88vh; overflow: auto; background: var(--paper); border-radius: 16px 16px 0 0; padding: 18px max(16px, env(safe-area-inset-left)) calc(18px + env(safe-area-inset-bottom)); }
+.sheet h3 { margin: 0 0 8px; font: 700 1.15rem/1.4 var(--font-title); }
+.quote { border-left: 3px solid var(--mark-on); padding-left: 10px; color: var(--muted); margin: 0 0 12px; font-size: .95rem; }
+textarea, input[type="text"] { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 10px; font: inherit; font-size: 1rem; }
+textarea { min-height: 96px; resize: vertical; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--paper); border-radius: 10px; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.danger { background: transparent; border-color: var(--warn); color: var(--warn); }
+.note { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.note .q { margin: 4px 0 0; }
+.note a { color: var(--accent); font-size: .85rem; }
+.toast { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 16px; border-radius: 999px; font-size: .9rem; z-index: 20; }
+button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.install { display: flex; gap: 10px; align-items: center; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; font-size: .9rem; line-height: 1.6; }
+.install span { flex: 1; }
+.install button { border: 0; background: var(--accent); color: var(--paper); border-radius: 999px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+/* Tablets (iPad mini is 744px wide in portrait): a little larger text, roomier page, centered dialogs. */
+@media (min-width: 700px) {
+  body { font-size: 19px; }
+  .wrap { max-width: 720px; }
+  article { padding: 32px 36px; }
+  h1 { font-size: 1.75rem; }
+  .sheet-bg { align-items: center; }
+  .sheet { border-radius: 16px; max-width: 600px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">《掌控习惯》读书会简明版</div>
+    <button class="tbtn" id="tocBtn">目录</button>
+    <button class="tbtn" id="myBtn">我的问题 <b id="myCount">0</b></button>
+  </div>
+</header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<div class="selbar" id="selbar" hidden><span>选中了一段文字</span><button id="askBtn">对这段提问</button></div>
+<button class="fab" id="fab">提个问题</button>
+<div id="sheetRoot"></div>
+
+<script>
+// ---------- settings for whoever publishes this ----------
+const CONFIG = {
+  // Shown on the "我的问题" page so readers know where to send feedback.
+  sendTo: "把复制好的内容发给分享这个链接给你的朋友（微信就可以）。",
+  // Optional: a URL that accepts a JSON POST (for example a form service). Leave empty to use copy/share only.
+  feedbackUrl: "",
+};
+
+// ---------- content (plain-language guide written for this book club; not a translation of the book) ----------
+const INTRO = {
+  id: "intro", title: "怎么用这份讲义",
+  blocks: [
+    { p: "这是一份读书会讲义：用小学五年级就能看懂的话，讲詹姆斯·克利尔《掌控习惯》（英文书名 Atomic Habits）里最有用的想法，每章配一个生活例子和一个这周就能做的小练习。它不是原书的翻译，想读原文的朋友可以找中文版《掌控习惯》。" },
+    { p: "这本书讲怎么养成好习惯、改掉坏习惯。前3章讲道理，第4到17章讲四个办法：让它看得见、让它有吸引力、让它简单、让它让人满意。最后几章讲怎么一直坚持下去。" },
+    { p: "每章都分四块，读一章大约5分钟：" },
+    { ol: ["一句话：这一章最重要的想法。", "大白话：用简单的话把它讲清楚。", "生活里的例子：放到工作和生活里，它是什么样子。", "这周试一试：一个小练习，做完打个勾。"] },
+    { p: "建议一周读一两章，读完和朋友聊10分钟。不用全部看懂，能用上一个想法就是收获。" },
+    { p: "看不懂的地方，用手指按住文字选中它，点下面的“对这段提问”，写下你的问题。所有问题都在右上角“我的问题”里，可以一键复制发给作者。" },
+  ],
+};
+
+const CHAPTERS = [
+  { n: "第1章", t: "每天进步一点点",
+    one: "每天好1%，一年后会好很多；每天差1%，一年后会差很多。",
+    plain: [
+      { p: "1%小得几乎看不出来。可是每天好1%，一年下来大约是原来的37倍；每天差1%，一年后几乎什么都不剩。习惯就像存钱的利息，时间越长，差别越大。" },
+      { p: "很多时候你努力了好久，好像没变化。就像冰块从零下慢慢升温，前面一直不化，到了0度才突然开始化。不是白费力气，是还没到那个点。作者还说：目标是你想要的结果，系统是你每天做的事。大家的目标常常差不多，真正拉开差距的是每天做的事。" },
+    ],
+    ex: "英国的自行车队以前成绩很一般。新教练让队员把每件小事都改好一点：座椅更舒服、睡觉带自己合适的枕头、勤洗手少感冒。几年后，他们拿了很多奥运金牌。",
+    task: "挑一件每天能好1%的小事（多走100步、少抽一根烟、多记一个单词），这周每天做。" },
+  { n: "第2章", t: "先想“我是谁”",
+    one: "最牢的改变，是从“我想做到什么”变成“我是什么样的人”。",
+    plain: [{ p: "改变有三层：结果（瘦了10斤）、做法（每天跑步）、身份（我是爱运动的人）。大多数人只盯着结果。作者说，从身份开始更牢：每做一次好习惯，就像给“我是这样的人”投了一票。票越多，你越相信自己。" }],
+    ex: "有人递烟给你。说“不了，我在戒烟”，心里还把自己当成抽烟的人；说“不了，我不抽烟”，你已经把自己当成不抽烟的人了。",
+    task: "写一句“我是______的人”（比如：我是说话算数的爸爸、我是爱看书的骑手），再写今天能为它投一票的小事。" },
+  { n: "第3章", t: "习惯的四个步骤",
+    one: "每个习惯都走四步：看到提示、心里想要、动手去做、得到好处。",
+    plain: [
+      { p: "手机一响（提示），你想知道是谁（想要），拿起来看（去做），看完心里踏实了（好处）。下次手机再响，你又会拿起来。好习惯和坏习惯都是这么来的。" },
+      { p: "所以养好习惯有四个办法：让它看得见、让它有吸引力、让它简单、让它让人满意。反过来就能戒坏习惯：让它看不见、没吸引力、做起来难、做了不舒服。后面的章节就讲这四个办法。" },
+    ],
+    ex: "下班累了（提示），想放松一下（想要），点一根烟（去做），觉得舒服了（好处）。戒烟难，是因为这四步已经走过几千遍了。",
+    task: "挑一个你的坏习惯，把它的四步写出来：提示是什么？你真正想要的是什么？" },
+  { n: "第4章", t: "看得见①：先看清自己的习惯",
+    one: "很多习惯是自动发生的，先把它们看清楚，才能改。",
+    plain: [
+      { p: "习惯做久了，人就不再注意它。作者建议列一张“习惯清单”：从起床到睡觉，写下每一件常做的事，后面标上“+”（对我好）、“−”（对我不好）或“=”（无所谓）。先看清楚，不用急着改。" },
+      { p: "日本的火车司机会用手指着信号灯，把看到的大声说出来，这样出错少了很多。把自动做的事说出来，人就清醒了。" },
+    ],
+    ex: "骑手等单的时候，手指会自己点开短视频。数一数一天点开几次，很多人会吓一跳。",
+    task: "这周挑一天，写下从起床到睡觉常做的十件事，每件标上 + − =。" },
+  { n: "第5章", t: "看得见②：说清楚什么时候、在哪里做",
+    one: "把“我要做”变成“我会在某时某地做”，做到的机会大很多。",
+    plain: [
+      { p: "“我要多运动”很难做到。“周一、三、五晚上7点，我在小区门口跑20分钟”就容易得多。作者还教了一个办法叫“习惯叠加”：把新习惯接在一个每天都会做的旧习惯后面。" },
+      { p: "说法是：做完______之后，我就______。" },
+    ],
+    ex: "“晚上刷完牙之后，我就给孩子读一页绘本。”“换好工作服之后，我就喝一杯水。”旧习惯变成了新习惯的闹钟。",
+    task: "用“做完______之后，我就______”写一句话，这周每天照着做。" },
+  { n: "第6章", t: "看得见③：环境比决心更管用",
+    one: "想多做一件事，就把它放在眼前；想少做一件事，就把它藏起来。",
+    plain: [{ p: "人很容易被眼前的东西带着走。超市把想多卖的东西放在收银台旁边，你就会顺手拿。我们也可以这样安排自己的生活：好习惯的提示放在显眼处，坏习惯的提示收起来。最好一个地方只干一件事，比如床只用来睡觉。" }],
+    ex: "想多喝水，就把水杯挂在电动车车把上。想多看书，就把书放在枕头上，把手机放到另一个房间充电。",
+    task: "为一个好习惯改一下环境：把它要用的东西放到你每天一定会看到的地方。" },
+  { n: "第7章", t: "看得见④：自控力的秘密",
+    one: "自控力强的人，不是更能忍，而是更少碰到诱惑。",
+    plain: [{ p: "一直靠忍，总有一天会忍不住。研究发现，看起来很自律的人，其实是把生活安排得更少碰到诱惑。坏习惯的提示一出现，“想要”就会跟着来，所以最好的办法是别让提示出现。" }],
+    ex: "想戒烟，就别在平时抽烟的楼梯口休息，换个地方喝水；把打火机和烟灰缸送人。想少打游戏，就把游戏挪到手机最后一页的文件夹里。",
+    task: "找出一个让你犯坏习惯的东西或地方，这周把它挪走或者绕开。" },
+  { n: "第8章", t: "有吸引力①：把想做的和该做的绑在一起",
+    one: "人会去做自己期待的事，所以把喜欢的事和该做的事绑在一起。",
+    plain: [{ p: "让人上瘾的不只是得到好处，还有“期待好处”的那种感觉。作者有个办法叫“诱惑捆绑”：只有在做该做的事的时候，才允许自己做喜欢的事。" }],
+    ex: "只有在骑动感单车的时候，才看最爱的综艺；只有在做家务的时候，才听喜欢的歌。时间久了，你会开始盼着去骑车。",
+    task: "写一句：“只有在______的时候，我才能______。”这周试三次。" },
+  { n: "第9章", t: "有吸引力②：身边的人影响你",
+    one: "人会学身边人的样子，所以去找一群把好习惯当平常事的人。",
+    plain: [{ p: "我们最容易模仿三种人：离得近的人、人多的那一群、有本事的人。想养成一个习惯，最快的办法是加入一群已经这样做的人。在那里，这件事就是“我们这样的人都这么做”。" }],
+    ex: "想坚持骑车，就加入一个周末骑行群；想考证，就找几个同事一起报名，每晚在群里打卡。",
+    task: "找一个已经有你想要的习惯的人或群，这周主动联系一次。" },
+  { n: "第10章", t: "有吸引力③：换个说法，换个感觉",
+    one: "坏习惯背后有一个真实的需要；换个办法满足它，或者换个说法看它。",
+    plain: [{ p: "每个坏习惯都在满足一个更深的需要，比如放松、被人认可、和人在一起。抽烟、刷手机只是你学会的一种办法，还可以换别的办法。说法也很重要：把“我得去上班”换成“我有一份工作可以去”，把“我得去锻炼”换成“我能锻炼身体”。说法变了，感觉也会变。" }],
+    ex: "外卖高峰快到了，心跳加快、有点紧张。可以对自己说：“这不是慌，是我的身体在准备冲刺。”",
+    task: "找一件你常说“我得去……”的事，改成“我能去……”，这一周都这么说。" },
+  { n: "第11章", t: "简单①：慢慢走，但别后退",
+    one: "光准备学不会，做的次数比想的时间更重要。",
+    plain: [{ p: "很多人一直在“准备”：查资料、做计划、等最好的时机，却一直没开始。准备会让人觉得自己在进步，但只有真的去做才有结果。习惯是练出来的，靠的是做了多少次，不是过了多少天。" }],
+    ex: "想学做菜，不用先看一百个视频。今晚就照着一个视频做一盘番茄炒蛋，做上十次，自然就好吃了。",
+    task: "把一件你“准备了很久”的事，今天先做一次，做得不好也没关系。" },
+  { n: "第12章", t: "简单②：越省事越容易做",
+    one: "人天生爱走省事的路，所以让好习惯省事，让坏习惯费事。",
+    plain: [{ p: "一件事要做的步骤越多，越难坚持。所以要给好习惯减少麻烦，给坏习惯多加麻烦。提前把东西准备好，就像先把下一步的路铺平。" }],
+    ex: "晚上就把骑行服和水壶放在门口，早上起来直接出门。想少点外卖，就周末把菜洗好切好放进冰箱，下班十分钟就能做好饭。",
+    task: "为一个好习惯，提前做一件准备（摆好东西、装好软件、定好闹钟）。" },
+  { n: "第13章", t: "简单③：两分钟就够",
+    one: "开始一个新习惯，先只做两分钟，先学会每天“出现”。",
+    plain: [{ p: "作者说，开始一个新习惯时，先把它缩小到两分钟能做完：“每晚读书”变成“每晚读一页”，“去健身”变成“换上运动鞋”。先让“每天都出现”成为习惯，再慢慢加量。一个习惯要先有，才能变好。" }],
+    ex: "想学英语，先每天只记一个单词；想给猫梳毛，先每天梳一下。两分钟太简单了，所以你一定做得到。",
+    task: "把一个想养成的习惯缩成两分钟的版本，这周每天做。" },
+  { n: "第14章", t: "简单④：让好习惯躲不掉",
+    one: "提前做好一个决定，让以后的自己想偷懒也偷不了。",
+    plain: [{ p: "有些选择做一次，以后就不用再靠意志力。比如设好自动存钱、换一个小一点的饭碗、把电视插头拔掉。作者把这叫作“承诺装置”：现在的你，替将来的你把门关好。" }],
+    ex: "发工资那天，自动转500块到另一张卡，专门给孩子存学费。手机设好晚上11点以后游戏自动锁住。",
+    task: "设一个“自动”的好习惯，比如自动存钱，或者让手机按时提醒你休息。" },
+  { n: "第15章", t: "满意①：做完马上有好处",
+    one: "马上有奖励的事，人会一做再做；马上难受的事，人会躲开。",
+    plain: [{ p: "坏习惯往往是现在舒服、以后难受，比如抽烟；好习惯常常是现在辛苦、以后才有好处，比如存钱、锻炼。所以要给好习惯加一点“马上的奖励”，让人做完就觉得爽。" }],
+    ex: "每少抽一包烟，就把省下的钱转进一个叫“乐高基金”的账户。看着数字往上涨，攒够了就给孩子买一套乐高。",
+    task: "给一个好习惯配一个马上就能拿到的小奖励，这周用起来。" },
+  { n: "第16章", t: "满意②：每天打个勾",
+    one: "把进步记下来，看得见的进步会让人想继续；漏了也别连漏两次。",
+    plain: [{ p: "每做一次就在日历上打个勾，看着一串勾，就不想让它断。这叫“习惯追踪”。作者还有一条规矩：漏一次没关系，谁都会有意外；但不要连着漏两次。连漏两次，就是一个新坏习惯的开始。" }],
+    ex: "打游戏的人都懂“连续登录”的感觉，舍不得断。把这种感觉用在好习惯上：在手机备忘录里每天记一笔“今天没抽烟”。",
+    task: "做一张这周的打勾表，做到就打勾。如果漏了一天，第二天一定补上。" },
+  { n: "第17章", t: "满意③：找个人盯着你",
+    one: "有人看着、做不到要付点代价，人就更容易坚持。",
+    plain: [{ p: "自己答应自己，很容易反悔。如果告诉了别人，或者约好做不到要付出一点代价，就难反悔多了。作者建议找一个监督伙伴，甚至写一份“习惯合同”，两个人都签上名字。" }],
+    ex: "和同事约好：谁这周抽了烟，就请对方喝一杯奶茶。或者每天在骑行群里发一张骑车记录的截图。",
+    task: "找一个人，告诉他你这周要坚持的一件事，请他周末问你做到没有。" },
+  { n: "第18章", t: "找适合你的赛场",
+    one: "每个人的天赋不一样，选一个适合你的方向，努力的效果会翻倍。",
+    plain: [{ p: "游泳冠军菲尔普斯的身材特别适合游泳，可要是让他去跑长跑，可能就很一般。每个人都有更容易做好的事。可以问问自己：什么事别人觉得累，我却觉得好玩？什么事我上手比别人快？在适合自己的地方，坚持会轻松很多。" }],
+    ex: "有的骑手觉得送单很累，却特别喜欢和客人聊天，那可能更适合做销售或私教。有的人拼乐高能坐五个小时，那可能适合需要耐心、会看图纸的活。",
+    task: "写下三件“别人觉得累，我却觉得好玩”的事。" },
+  { n: "第19章", t: "不太难，也不太简单",
+    one: "难度刚好比你的能力高一点点，人最容易坚持，也进步最快。",
+    plain: [{ p: "太简单会无聊，太难会放弃。最好的难度是“跳一跳够得着”。作者说，坚持最大的敌人不是失败，而是无聊。高手和普通人的区别，是觉得无聊的时候还能接着做。" }],
+    ex: "好玩的手游，每一关都比上一关难一点点，所以人停不下来。健身也一样：深蹲能做10个，就练11个，不要一下子练30个。",
+    task: "给你正在做的一个习惯加一点点难度：多一分钟、多一个、多一页。" },
+  { n: "第20章", t: "习惯也要定期检查",
+    one: "习惯会让人不再用心，所以要定期停下来，看看自己做得怎么样。",
+    plain: [{ p: "一件事成了习惯，做起来省力了，但也容易不再进步，甚至做错了也没发现。作者每年都会回头看：今年什么做得好？什么做得不好？明年怎么改？还有一点：别把自己绑死在一个身份上。“我是健身教练”，换了工作就会难受；“我是能帮别人变健康的人”，到哪里都用得上。" }],
+    ex: "从健身教练换成外卖骑手，不等于本事都没了。会照顾人、能坚持、懂身体，这些在新工作里一样有用。",
+    task: "周末花10分钟回答三个问题：这周什么做得好？什么没做好？下周改一件什么？" },
+  { n: "结尾", t: "小习惯，大结果",
+    one: "一个小习惯改变不了人生，很多小习惯加在一起就会。",
+    plain: [{ p: "一粒米不算一碗饭，一块钱不算有钱，一天不抽烟也不算戒了烟。可是一粒一粒、一天一天加起来，就会变成很大的变化。真正的改变不是一次大动作，而是很多个1%的小进步。" }],
+    ex: "一年后回头看，你可能不记得哪天读了一页书、哪天没抽烟，但你会发现，自己已经变成了另一个人。",
+    task: "翻回这份讲义，挑一个你最想留下的习惯，写下明天你会怎么开始。" },
+];
+
+const CLUB = {
+  id: "club", title: "读书会怎么开",
+  blocks: [
+    { p: "每周一次，每次30分钟，当面或视频都可以。人不用多，两三个就够。" },
+    { ol: ["先聊上周（5分钟）：上周的“试一试”做了没有？打勾表上有几个勾？", "一起读（10分钟）：轮流读这周的一两章。", "聊三个问题（10分钟）：这一章哪句话你最同意？哪句不同意？你的生活里有没有类似的例子？如果只能用上一个想法，你选哪个？", "定下周的小行动（5分钟）：每个人说出自己这周要试的一件事，互相当监督伙伴。"] },
+    { p: "小提醒：只问问题、不讲大道理；漏了一周也没关系，下周接着来；这不是考试，是朋友一起变好的时间。" },
+  ],
+};
+CHAPTERS.forEach((c, i) => { c.id = "c" + (i + 1); });
+const PAGES = [INTRO, ...CHAPTERS, CLUB];
+const pageIdx = (id) => PAGES.findIndex((p) => p.id === id);
+const pageName = (p) => p.n ? `${p.n}　${p.t}` : p.title;
+
+// ---------- reader data, kept only on this phone ----------
+const KEY = "habits-bookclub-v1";
+let state = { notes: [], tasks: {}, level: {}, name: "", last: "intro" };
+try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+if (!state.reader) state.reader = "r" + Math.random().toString(36).slice(2, 10);
+// With CONFIG.feedbackUrl set, every save is also sent to the organizer (batched a few seconds), so readers don't have to send anything.
+let syncTimer = null;
+function autoSend() {
+  if (!CONFIG.feedbackUrl) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    fetch(CONFIG.feedbackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true,
+      body: JSON.stringify({ reader: state.reader, name: state.name, notes: state.notes, level: state.level, tasks: state.tasks, text: feedbackText(), at: new Date().toISOString() }) })
+      .then((r) => { state.sentAt = r.ok ? new Date().toISOString() : state.sentAt; persist(); })
+      .catch(() => {});
+  }, 3000);
+}
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+const save = () => { persist(); autoSend(); };
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+let pidSeq = 0;
+const para = (cls, html) => `<p data-pid="${pidSeq++}"${cls ? ` class="${cls}"` : ""}>${html}</p>`;
+function blocksHTML(blocks) {
+  return blocks.map((b) => {
+    if (b.p) return para("", esc(b.p));
+    const tag = b.ol ? "ol" : "ul";
+    return `<${tag}>${(b.ol || b.ul).map((x) => `<li data-pid="${pidSeq++}">${esc(x)}</li>`).join("")}</${tag}>`;
+  }).join("");
+}
+
+// ---------- views ----------
+const LEVELS = ["都看懂了", "有一点难", "很多看不懂"];
+function renderPage(id) {
+  const i = Math.max(0, pageIdx(id));
+  const pg = PAGES[i];
+  state.last = pg.id; persist();
+  pidSeq = 0;
+  let body;
+  if (pg.n) {
+    body = `<p class="kicker">${esc(pg.n)}</p><h1>${esc(pg.t)}</h1>
+      <h2 class="lbl">一句话</h2>${para("one", esc(pg.one))}
+      <h2 class="lbl">大白话</h2>${blocksHTML(pg.plain)}
+      <h2 class="lbl">生活里的例子</h2>${para("example", esc(pg.ex))}
+      <h2 class="lbl">这周试一试</h2>
+      <label class="task"><input type="checkbox" id="taskBox" ${state.tasks[pg.id] ? "checked" : ""}><span data-pid="${pidSeq++}">${esc(pg.task)}</span></label>
+      <div class="check"><p>这一章你看懂了吗？（作者会根据大家的回答改进讲义）</p>
+        <div class="choices">${LEVELS.map((l, k) => `<button class="choice" data-level="${k}" aria-pressed="${state.level[pg.id] === k}">${l}</button>`).join("")}</div>
+        <p class="hint" style="margin-top:10px">哪里看不懂？按住文字选中它，点“对这段提问”。</p>
+      </div>`;
+  } else {
+    body = `<h1>${esc(pg.title)}</h1>${blocksHTML(pg.blocks)}`;
+  }
+  const prev = PAGES[i - 1], next = PAGES[i + 1];
+  $("#view").innerHTML = `<article id="art" data-page="${pg.id}">${body}</article>
+    <div class="pager">
+      <button class="pbtn" id="prevBtn" ${prev ? "" : "hidden"}><small>上一篇</small>${prev ? esc(pageName(prev)) : ""}</button>
+      <button class="pbtn next" id="nextBtn" ${next ? "" : "hidden"}><small>下一篇</small>${next ? esc(pageName(next)) : ""}</button>
+    </div>`;
+  if (prev) $("#prevBtn").onclick = () => go(prev.id);
+  if (next) $("#nextBtn").onclick = () => go(next.id);
+  const tb = $("#taskBox");
+  if (tb) tb.onchange = () => { state.tasks[pg.id] = tb.checked; save(); };
+  document.querySelectorAll("[data-level]").forEach((b) => b.onclick = () => {
+    const k = Number(b.dataset.level);
+    state.level[pg.id] = state.level[pg.id] === k ? undefined : k; save();
+    document.querySelectorAll("[data-level]").forEach((x) => x.setAttribute("aria-pressed", String(state.level[pg.id] === Number(x.dataset.level))));
+    if (k > 0 && state.level[pg.id] === k) toast("谢谢！可以选中看不懂的文字提个问题。");
+  });
+  applyHighlights(pg.id);
+  window.scrollTo(0, 0);
+}
+function renderToc() {
+  $("#view").innerHTML = `<article><h1>目录</h1><nav class="toc">${PAGES.map((p) => {
+    const n = state.notes.filter((x) => x.page === p.id).length;
+    const meta = [state.tasks[p.id] ? "已练习" : "", n ? `${n}个问题` : ""].filter(Boolean).join(" · ");
+    return `<a href="#${p.id}" data-go="${p.id}"><span>${esc(pageName(p))}</span><span class="meta">${meta}</span></a>`;
+  }).join("")}</nav></article>`;
+  window.scrollTo(0, 0);
+}
+// Navigation is driven by the page itself; the #hash is only kept in sync where the browser allows it
+// (some in-app viewers block hash changes, which broke the contents and previous/next buttons).
+let current = (() => { try { return location.hash.slice(1); } catch (e) { return ""; } })() || state.last;
+function go(id) {
+  current = id;
+  route();
+  try { if (location.hash.slice(1) !== id) history.pushState(null, "", "#" + id); } catch (e) {}
+}
+function route() {
+  if (current === "toc") renderToc();
+  else renderPage(pageIdx(current) >= 0 ? current : state.last);
+  $("#myCount").textContent = state.notes.length;
+}
+window.addEventListener("hashchange", () => { const id = location.hash.slice(1); if (id && id !== current) { current = id; route(); } });
+window.addEventListener("popstate", () => { const id = location.hash.slice(1) || state.last; if (id !== current) { current = id; route(); } });
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-go]");
+  if (!a) return;
+  e.preventDefault();
+  closeSheet();
+  go(a.dataset.go);
+});
+$("#tocBtn").onclick = () => go("toc");
+$("#myBtn").onclick = openMine;
+
+// ---------- highlights ----------
+function textNodes(el) {
+  const out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()) out.push(w.currentNode);
+  return out;
+}
+function wrapText(el, text, noteId) {
+  const nodes = textNodes(el);
+  const full = nodes.map((n) => n.nodeValue).join("");
+  const start = full.indexOf(text);
+  if (start < 0 || !text) return;
+  const end = start + text.length;
+  let pos = 0;
+  nodes.forEach((n) => {
+    const a = pos, b = pos + n.nodeValue.length;
+    pos = b;
+    const s = Math.max(start, a), e = Math.min(end, b);
+    if (s >= e) return;
+    const r = document.createRange();
+    r.setStart(n, s - a); r.setEnd(n, e - a);
+    const m = document.createElement("mark");
+    m.className = "hl"; m.dataset.note = noteId;
+    r.surroundContents(m);
+  });
+}
+function applyHighlights(page) {
+  state.notes.filter((x) => x.page === page).forEach((x) => {
+    const el = document.querySelector(`#art [data-pid="${x.pid}"]`);
+    if (el) wrapText(el, x.text, x.id);
+  });
+}
+document.addEventListener("click", (e) => {
+  const m = e.target.closest("mark.hl");
+  if (m && !hasSelection()) { e.preventDefault(); openNote(state.notes.find((x) => x.id === m.dataset.note)); }
+});
+
+// ---------- selecting text to ask ----------
+let pending = null;
+function hasSelection() { const s = window.getSelection(); return s && !s.isCollapsed && s.toString().trim().length > 0; }
+function readSelection() {
+  const s = window.getSelection();
+  if (!s || s.isCollapsed) return null;
+  const text = s.toString().replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  const node = (n) => (n.nodeType === 1 ? n : n.parentElement);
+  const a = node(s.anchorNode)?.closest("[data-pid]"), b = node(s.focusNode)?.closest("[data-pid]");
+  const art = $("#art");
+  if (!art || !a || !art.contains(a)) return null;
+  // A selection across paragraphs is kept as the part inside the first one.
+  const el = a;
+  const inEl = a === b ? text : (el.textContent.includes(text) ? text : text.slice(0, 60));
+  return { page: art.dataset.page, pid: Number(el.dataset.pid), text: el.textContent.includes(inEl) ? inEl : el.textContent.slice(0, 60) };
+}
+document.addEventListener("selectionchange", () => {
+  const sel = readSelection();
+  pending = sel;
+  $("#selbar").hidden = !sel;
+  $("#fab").hidden = !!sel;
+});
+$("#askBtn").addEventListener("mousedown", (e) => e.preventDefault());
+$("#askBtn").onclick = () => {
+  const sel = pending || readSelection();
+  if (!sel) return;
+  window.getSelection().removeAllRanges();
+  $("#selbar").hidden = true; $("#fab").hidden = false;
+  openNote(null, sel);
+};
+$("#fab").onclick = () => {
+  const art = $("#art");
+  openNote(null, { page: art ? art.dataset.page : "intro", pid: -1, text: "" });
+};
+
+// ---------- sheets ----------
+function sheet(html) {
+  const root = $("#sheetRoot");
+  root.innerHTML = `<div class="sheet-bg" id="sbg"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("#sbg").addEventListener("click", (e) => { if (e.target.id === "sbg") closeSheet(); });
+  return root;
+}
+function closeSheet() { $("#sheetRoot").innerHTML = ""; }
+function openNote(note, sel) {
+  const isNew = !note;
+  const data = note || { id: "n" + Date.now().toString(36), page: sel.page, pid: sel.pid, text: sel.text, q: "", at: new Date().toISOString() };
+  const pg = PAGES[pageIdx(data.page)];
+  sheet(`<h3>${isNew ? "提一个问题" : "我的问题"}</h3>
+    <p class="hint">${esc(pageName(pg))}</p>
+    ${data.text ? `<p class="quote">${esc(data.text)}</p>` : ""}
+    <textarea id="qBox" placeholder="哪里看不懂？或者你想到了什么？随便写，写一半也行。">${esc(data.q)}</textarea>
+    <div class="row">
+      <button class="btn" id="saveQ">保存</button>
+      <button class="btn ghost" id="cancelQ">取消</button>
+      ${isNew ? "" : `<button class="btn danger" id="delQ">删除</button>`}
+    </div>`);
+  const box = $("#qBox");
+  setTimeout(() => box.focus(), 50);
+  $("#cancelQ").onclick = closeSheet;
+  $("#saveQ").onclick = () => {
+    data.q = box.value.trim();
+    if (!data.q && !data.text) { closeSheet(); return; }
+    if (isNew) state.notes.push(data);
+    save(); closeSheet(); route();
+    toast("已保存。在“我的问题”里可以发给作者。");
+  };
+  if (!isNew) $("#delQ").onclick = () => { state.notes = state.notes.filter((x) => x.id !== data.id); save(); closeSheet(); route(); };
+}
+
+// ---------- my questions + send to the author ----------
+function feedbackText() {
+  const lines = [`《掌控习惯》读书会简明版 · 读者反馈`, `读者：${state.name || "（没留名字）"}`, ""];
+  PAGES.forEach((p) => {
+    const notes = state.notes.filter((x) => x.page === p.id);
+    const lvl = state.level[p.id];
+    if (!notes.length && lvl === undefined && !state.tasks[p.id]) return;
+    lines.push(`【${pageName(p)}】`);
+    if (lvl !== undefined) lines.push(`看懂了吗：${LEVELS[lvl]}`);
+    if (state.tasks[p.id]) lines.push(`这周试一试：做了`);
+    notes.forEach((x) => {
+      if (x.text) lines.push(`· 划线：「${x.text}」`);
+      lines.push(`  问题：${x.q || "（没写问题）"}`);
+    });
+    lines.push("");
+  });
+  return lines.join("\n").trim();
+}
+function openMine() {
+  const notes = state.notes;
+  sheet(`<h3>我的问题（${notes.length}）</h3>
+    ${notes.length ? notes.map((x) => {
+      const p = PAGES[pageIdx(x.page)];
+      return `<div class="note"><a href="#${x.page}" data-go="${x.page}">${esc(pageName(p))}</a>${x.text ? `<p class="quote" style="margin:4px 0 0">${esc(x.text)}</p>` : ""}<p class="q">${esc(x.q || "（没写问题）")}</p></div>`;
+    }).join("") : `<p class="hint">还没有问题。读的时候按住文字选中，点“对这段提问”。</p>`}
+    <h3 style="margin-top:18px">发给作者</h3>
+    <p class="hint">${CONFIG.feedbackUrl ? "你的问题保存后会自动发给作者，不用再做什么。下面的按钮可以再发一份到微信。" : esc(CONFIG.sendTo)}</p>
+    <input type="text" id="nameBox" placeholder="你的名字或昵称（可以不填）" value="${esc(state.name)}">
+    <div class="row">
+      <button class="btn" id="sendBtn">复制，去微信发送</button>
+      ${navigator.share ? `<button class="btn ghost" id="shareBtn">用其他方式分享</button>` : ""}
+      <button class="btn ghost" id="closeMine">关闭</button>
+    </div>
+    <textarea id="fbText" readonly style="margin-top:12px;min-height:140px" aria-label="要发送的内容"></textarea>
+    <p class="hint">复制不成功的话，可以长按上面的文字全选复制。</p>`);
+  const fb = $("#fbText");
+  const refresh = () => { state.name = $("#nameBox").value.trim(); save(); fb.value = feedbackText(); };
+  refresh();
+  $("#nameBox").oninput = refresh;
+  $("#closeMine").onclick = closeSheet;
+  $("#sendBtn").onclick = async () => {
+    refresh();
+    if (CONFIG.feedbackUrl) {
+      try { await fetch(CONFIG.feedbackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: state.name, text: fb.value, notes: state.notes, level: state.level, tasks: state.tasks }) }); toast("已发送，谢谢！"); return; } catch (e) {}
+    }
+    if (await copy(fb.value)) toast("已复制，打开微信粘贴发送就行。");
+    else { fb.focus(); fb.select(); toast("请长按文字，选“全选”再复制。"); }
+  };
+  const sb = $("#shareBtn");
+  if (sb) sb.onclick = () => { refresh(); navigator.share({ title: "读书会反馈", text: fb.value }).catch(() => {}); };
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  try {
+    const t = document.createElement("textarea");
+    t.value = text; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t); t.select(); t.setSelectionRange(0, text.length);
+    const ok = document.execCommand("copy"); t.remove(); return ok;
+  } catch (e) { return false; }
+}
+let toastTimer;
+function toast(msg) {
+  let t = $(".toast");
+  if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 2600);
+}
+
+route();
+
+// ---------- install as a home-screen app ----------
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+(function installHint() {
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if (standalone || state.hideInstall) return;
+  const ua = navigator.userAgent;
+  let how;
+  if (/MicroMessenger/i.test(ua)) how = "点右上角“⋯”，选“在浏览器打开”，再把它添加到主屏幕。";
+  else if (/iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) how = "点下方的“分享”按钮，选“添加到主屏幕”。";
+  else if (/Android/i.test(ua)) how = "点浏览器菜单“⋮”，选“添加到主屏幕”或“安装应用”。";
+  else return;
+  const bar = document.createElement("div");
+  bar.className = "install";
+  bar.innerHTML = `<span><b>放到手机桌面，像App一样打开：</b>${how}</span><button aria-label="关闭">知道了</button>`;
+  const box = document.createElement("div");
+  box.className = "wrap"; box.style.paddingTop = "16px";
+  box.appendChild(bar);
+  bar.querySelector("button").onclick = () => { state.hideInstall = true; persist(); box.remove(); };
+  document.querySelector("main").prepend(box);
+})();
+</script>
+</body>
+</html>
